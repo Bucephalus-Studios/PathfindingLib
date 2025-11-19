@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(PathfindingLib VERSION 2.0.0 LANGUAGES CXX)
+project(PathfindingLib VERSION 3.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,10 +18,6 @@ target_include_directories(PathfindingLib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
-
-# Backward compatibility alias
-add_library(AStarLib INTERFACE)
-target_link_libraries(AStarLib INTERFACE PathfindingLib)
 
 # Testing, benchmarking, and examples
 option(PATHFINDINGLIB_BUILD_TESTS "Build tests" ON)
@@ -67,7 +63,7 @@ endif()
 
 # Installation
 include(GNUInstallDirs)
-install(TARGETS PathfindingLib AStarLib
+install(TARGETS PathfindingLib
     EXPORT PathfindingLibTargets
 )
 
@@ -76,11 +72,6 @@ install(FILES
     Pathfinding_Grid.hpp
     Pathfinding_Node.hpp
     Pathfinding_Types.hpp
-    # Keep old headers for backward compatibility (can be deprecated in future)
-    AStarLib.hpp
-    AStar_Grid.hpp
-    AStar_Node.hpp
-    AStar_Types.hpp
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/PathfindingLib
 )
 

@@ -1,10 +1,10 @@
-#include "../AStarLib.hpp"
+#include "../PathfindingLib.hpp"
 #include <iostream>
 #include <fstream>
 #include <random>
 #include <set>
 
-using namespace AStarLib;
+using namespace PathfindingLib;
 
 // Helper to generate verified obstacle map
 std::vector<std::tuple<int, int>> generateVerifiedMap(
@@ -18,7 +18,7 @@ std::vector<std::tuple<int, int>> generateVerifiedMap(
     std::uniform_int_distribution<int> distX(0, width - 1);
     std::uniform_int_distribution<int> distY(0, height - 1);
 
-    AStar_Grid<int> grid(width, height);
+    Pathfinding_Grid<int> grid(width, height);
     std::vector<std::tuple<int, int>> obstacles;
     std::set<std::tuple<int, int>> tried;
 
@@ -44,7 +44,7 @@ std::vector<std::tuple<int, int>> generateVerifiedMap(
         grid.setObstacle(x, y);
 
         // Verify path still exists
-        auto path = findPath(grid, start, end);
+        auto path = findPathAStar(grid, start, end);
         if (!path.empty()) {
             obstacles.push_back(pos);
             if (obstacles.size() % 100 == 0) {
@@ -59,7 +59,7 @@ std::vector<std::tuple<int, int>> generateVerifiedMap(
     }
 
     // Verify final path
-    auto finalPath = findPath(grid, start, end);
+    auto finalPath = findPathAStar(grid, start, end);
     std::cout << "Final: " << obstacles.size() << " obstacles, path length: " << finalPath.size() << "\n\n";
 
     return obstacles;

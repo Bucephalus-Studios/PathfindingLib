@@ -13,7 +13,6 @@ A fast, header-only C++17 pathfinding library with **6 algorithms**, extensive t
 - 🔄 Support for 4-way and 8-way movement
 - 📐 Template-based coordinate types (int, float, double, etc.)
 - 🎓 Well-documented with examples
-- 🔙 Backward compatible with AStarLib v1.x
 
 ## Quick Start
 
@@ -369,58 +368,6 @@ enum class MovementType {
 - `calculateChebyshevDistance()` - L-infinity norm
 - `calculateOctileDistance()` - Optimal for 8-way with diagonal cost
 
-## Backward Compatibility
-
-PathfindingLib 2.0 maintains backward compatibility with AStarLib 1.x:
-
-- Old header files (`AStarLib.hpp`, `AStar_Grid.hpp`, etc.) are still included
-- Old namespace `AStarLib` still works
-- Existing code will continue to work without modification
-
-However, we recommend updating to the new API for access to all algorithms.
-
-## Migration Guide
-
-### From AStarLib 1.x to PathfindingLib 2.0
-
-1. **Update includes:**
-   ```cpp
-   // Old
-   #include "AStarLib.hpp"
-
-   // New
-   #include "PathfindingLib.hpp"
-   ```
-
-2. **Update namespace:**
-   ```cpp
-   // Old
-   using namespace AStarLib;
-
-   // New
-   using namespace PathfindingLib;
-   ```
-
-3. **Update types:**
-   ```cpp
-   // Old
-   AStar_Grid<int> grid(10, 10);
-
-   // New
-   Pathfinding_Grid<int> grid(10, 10);
-   ```
-
-4. **Optionally, use new algorithms:**
-   ```cpp
-   // Old (still works)
-   auto path = findPath(grid, start, end);
-
-   // New (recommended)
-   auto path = findPathAStar(grid, start, end);
-   // or
-   auto path = findPath(grid, start, end, Algorithm::AStar);
-   ```
-
 ## Requirements
 
 - C++17 or later
@@ -451,6 +398,11 @@ Contributions are welcome! Please ensure:
 - Performance-critical code includes benchmarks
 
 ## Changelog
+
+### Version 3.0.0 (Breaking Changes)
+- ⚠️ **BREAKING**: Removed old AStarLib backward compatibility files
+- 🧹 Cleaned up legacy code for cleaner codebase
+- 📝 All code now uses PathfindingLib namespace and types
 
 ### Version 2.0.0
 - 🎯 Added 5 new pathfinding algorithms (Dijkstra, BFS, DFS, Greedy Best-First, Bidirectional A*)
