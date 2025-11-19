@@ -1,4 +1,4 @@
-#include "../Pathfinding_Grid.hpp"
+#include "../classes/Pathfinding_Grid.hpp"
 #include <gtest/gtest.h>
 
 // Test grid construction
