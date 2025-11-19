@@ -1,5 +1,6 @@
 #include "../AStarLib.hpp"
 #include <gtest/gtest.h>
+#include <random>
 
 using namespace AStarLib;
 
@@ -308,4 +309,104 @@ TEST(PathfindingTest, AdjacentPointsVertical) {
     EXPECT_EQ(path.size(), 2);
     EXPECT_EQ(path[0], start);
     EXPECT_EQ(path[1], end);
+}
+
+// Test 20% obstacles scenario to verify benchmark correctness
+TEST(PathfindingTest, PathfindingWith20PercentObstacles) {
+    std::mt19937 rng(12345);  // Same seed as benchmark
+    std::uniform_int_distribution<int> dist(0, 99);
+
+    AStar_Grid<int> grid(100, 100);
+
+    // Add 20% obstacles (same as benchmark)
+    int obstacleCount = 2000;
+    for (int i = 0; i < obstacleCount; ++i) {
+        int x = dist(rng);
+        int y = dist(rng);
+        grid.setObstacle(x, y);
+    }
+
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    auto path = findPath(grid, start, end);
+
+    // Verify behavior - path might exist or not depending on obstacle placement
+    // But this should not be instantaneous
+    if (!path.empty()) {
+        EXPECT_EQ(path.front(), start);
+        EXPECT_EQ(path.back(), end);
+        // Verify all nodes in path are walkable
+        for (const auto& coord : path) {
+            EXPECT_TRUE(grid.getNode(coord).getIsWalkable());
+        }
+    }
+}
+
+// Test 10% obstacles scenario for comparison
+TEST(PathfindingTest, PathfindingWith10PercentObstacles) {
+    std::mt19937 rng(12345);
+    std::uniform_int_distribution<int> dist(0, 99);
+
+    AStar_Grid<int> grid(100, 100);
+
+    // Add 10% obstacles
+    int obstacleCount = 1000;
+    for (int i = 0; i < obstacleCount; ++i) {
+        int x = dist(rng);
+        int y = dist(rng);
+        grid.setObstacle(x, y);
+    }
+
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    auto path = findPath(grid, start, end);
+
+    EXPECT_FALSE(path.empty());
+    EXPECT_EQ(path.front(), start);
+    EXPECT_EQ(path.back(), end);
+}
+
+// Test to verify that start/end are not blocked by random obstacles
+TEST(PathfindingTest, RandomObstaclesDoNotBlockStartEnd) {
+    std::mt19937 rng(54321);
+    std::uniform_int_distribution<int> dist(0, 99);
+
+    AStar_Grid<int> grid(100, 100);
+
+    // Add random obstacles
+    for (int i = 0; i < 1500; ++i) {
+        int x = dist(rng);
+        int y = dist(rng);
+        // Don't block start or end
+        if ((x != 0 || y != 0) && (x != 99 || y != 99)) {
+            grid.setObstacle(x, y);
+        }
+    }
+
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    // Verify start and end are walkable
+    EXPECT_TRUE(grid.getNode(start).getIsWalkable());
+    EXPECT_TRUE(grid.getNode(end).getIsWalkable());
+
+    auto path = findPath(grid, start, end);
+
+    // Path should exist since start and end are guaranteed walkable
+    // (though may still fail if completely walled off)
+    if (path.empty()) {
+        // If no path, verify that at least one endpoint neighbor is blocked
+        bool startHasWalkableNeighbor = false;
+        auto startNeighbors = grid.getNeighbors(start);
+        for (const auto& n : startNeighbors) {
+            if (grid.getNode(n).getIsWalkable()) {
+                startHasWalkableNeighbor = true;
+                break;
+            }
+        }
+        // Only acceptable if start is completely surrounded
+        EXPECT_FALSE(startHasWalkableNeighbor);
+    }
 }

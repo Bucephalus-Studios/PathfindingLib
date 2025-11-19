@@ -1,8 +1,8 @@
-add_executable(astar_benchmarks
+add_executable(benchmarks
     benchmark_pathfinding.cpp
 )
 
-target_link_libraries(astar_benchmarks
+target_link_libraries(benchmarks
     PRIVATE
         AStarLib
         benchmark::benchmark
