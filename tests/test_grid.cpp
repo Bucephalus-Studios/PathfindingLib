@@ -1,17 +1,17 @@
-#include "../AStar_Grid.hpp"
+#include "../Pathfinding_Grid.hpp"
 #include <gtest/gtest.h>
 
 // Test grid construction
-TEST(AStarGridTest, Construction) {
-    AStar_Grid<int> grid(10, 20);
+TEST(PathfindingGridTest, Construction) {
+    Pathfinding_Grid<int> grid(10, 20);
     EXPECT_EQ(grid.width, 10);
     EXPECT_EQ(grid.height, 20);
     EXPECT_EQ(grid.nodes.size(), 10);
     EXPECT_EQ(grid.nodes[0].size(), 20);
 }
 
-TEST(AStarGridTest, AllNodesInitializedAsWalkable) {
-    AStar_Grid<int> grid(5, 5);
+TEST(PathfindingGridTest, AllNodesInitializedAsWalkable) {
+    Pathfinding_Grid<int> grid(5, 5);
     for (int x = 0; x < 5; ++x) {
         for (int y = 0; y < 5; ++y) {
             EXPECT_TRUE(grid.getNode(x, y).getIsWalkable());
@@ -20,37 +20,37 @@ TEST(AStarGridTest, AllNodesInitializedAsWalkable) {
 }
 
 // Test node access
-TEST(AStarGridTest, GetNodeWithCoordinates) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNodeWithCoordinates) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto& node = grid.getNode(3, 7);
     EXPECT_EQ(std::get<0>(node.position), 3);
     EXPECT_EQ(std::get<1>(node.position), 7);
 }
 
-TEST(AStarGridTest, GetNodeWithTuple) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNodeWithTuple) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto pos = std::make_tuple(5, 2);
     auto& node = grid.getNode(pos);
     EXPECT_EQ(node.position, pos);
 }
 
-TEST(AStarGridTest, GetNodeConst) {
-    const AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNodeConst) {
+    const Pathfinding_Grid<int> grid(10, 10);
     const auto& node = grid.getNode(4, 6);
     EXPECT_EQ(std::get<0>(node.position), 4);
     EXPECT_EQ(std::get<1>(node.position), 6);
 }
 
 // Test bounds checking
-TEST(AStarGridTest, IsWithinBoundsValid) {
-    AStar_Grid<int> grid(10, 15);
+TEST(PathfindingGridTest, IsWithinBoundsValid) {
+    Pathfinding_Grid<int> grid(10, 15);
     EXPECT_TRUE(grid.isWithinBounds(0, 0));
     EXPECT_TRUE(grid.isWithinBounds(9, 14));
     EXPECT_TRUE(grid.isWithinBounds(5, 7));
 }
 
-TEST(AStarGridTest, IsWithinBoundsInvalid) {
-    AStar_Grid<int> grid(10, 15);
+TEST(PathfindingGridTest, IsWithinBoundsInvalid) {
+    Pathfinding_Grid<int> grid(10, 15);
     EXPECT_FALSE(grid.isWithinBounds(-1, 5));
     EXPECT_FALSE(grid.isWithinBounds(5, -1));
     EXPECT_FALSE(grid.isWithinBounds(10, 5));
@@ -59,24 +59,24 @@ TEST(AStarGridTest, IsWithinBoundsInvalid) {
     EXPECT_FALSE(grid.isWithinBounds(20, 20));
 }
 
-TEST(AStarGridTest, IsWithinBoundsWithTuple) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, IsWithinBoundsWithTuple) {
+    Pathfinding_Grid<int> grid(10, 10);
     EXPECT_TRUE(grid.isWithinBounds(std::make_tuple(5, 5)));
     EXPECT_FALSE(grid.isWithinBounds(std::make_tuple(-1, 5)));
     EXPECT_FALSE(grid.isWithinBounds(std::make_tuple(10, 5)));
 }
 
 // Test obstacle setting
-TEST(AStarGridTest, SetObstacle) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, SetObstacle) {
+    Pathfinding_Grid<int> grid(10, 10);
     EXPECT_TRUE(grid.getNode(5, 5).getIsWalkable());
 
     grid.setObstacle(5, 5);
     EXPECT_FALSE(grid.getNode(5, 5).getIsWalkable());
 }
 
-TEST(AStarGridTest, SetObstacleOutOfBounds) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, SetObstacleOutOfBounds) {
+    Pathfinding_Grid<int> grid(10, 10);
     // Should not crash when setting obstacle out of bounds
     grid.setObstacle(-1, 5);
     grid.setObstacle(15, 5);
@@ -84,8 +84,8 @@ TEST(AStarGridTest, SetObstacleOutOfBounds) {
     grid.setObstacle(5, 20);
 }
 
-TEST(AStarGridTest, SetWalkable) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, SetWalkable) {
+    Pathfinding_Grid<int> grid(10, 10);
     grid.setObstacle(3, 3);
     EXPECT_FALSE(grid.getNode(3, 3).getIsWalkable());
 
@@ -94,8 +94,8 @@ TEST(AStarGridTest, SetWalkable) {
 }
 
 // Test neighbor finding
-TEST(AStarGridTest, GetNeighborsCenter) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNeighborsCenter) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto neighbors = grid.getNeighbors(5, 5);
 
     EXPECT_EQ(neighbors.size(), 4);
@@ -115,22 +115,22 @@ TEST(AStarGridTest, GetNeighborsCenter) {
     EXPECT_TRUE(hasRight);
 }
 
-TEST(AStarGridTest, GetNeighborsCorner) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNeighborsCorner) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto neighbors = grid.getNeighbors(0, 0);
 
     EXPECT_EQ(neighbors.size(), 2);  // Only right and up
 }
 
-TEST(AStarGridTest, GetNeighborsEdge) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNeighborsEdge) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto neighbors = grid.getNeighbors(0, 5);
 
     EXPECT_EQ(neighbors.size(), 3);  // Up, down, and right
 }
 
-TEST(AStarGridTest, GetNeighborsWithTuple) {
-    AStar_Grid<int> grid(10, 10);
+TEST(PathfindingGridTest, GetNeighborsWithTuple) {
+    Pathfinding_Grid<int> grid(10, 10);
     auto pos = std::make_tuple(5, 5);
     auto neighbors = grid.getNeighbors(pos);
 
@@ -138,23 +138,23 @@ TEST(AStarGridTest, GetNeighborsWithTuple) {
 }
 
 // Test with different coordinate types
-TEST(AStarGridTest, UnsignedIntCoordinates) {
-    AStar_Grid<unsigned int> grid(10, 10);
+TEST(PathfindingGridTest, UnsignedIntCoordinates) {
+    Pathfinding_Grid<unsigned int> grid(10, 10);
     EXPECT_EQ(grid.width, 10u);
     EXPECT_EQ(grid.height, 10u);
 }
 
 // Test grid sizes
-TEST(AStarGridTest, SmallGrid) {
-    AStar_Grid<int> grid(1, 1);
+TEST(PathfindingGridTest, SmallGrid) {
+    Pathfinding_Grid<int> grid(1, 1);
     EXPECT_EQ(grid.width, 1);
     EXPECT_EQ(grid.height, 1);
     auto neighbors = grid.getNeighbors(0, 0);
     EXPECT_EQ(neighbors.size(), 0);  // Single cell has no neighbors
 }
 
-TEST(AStarGridTest, LargeGrid) {
-    AStar_Grid<int> grid(100, 100);
+TEST(PathfindingGridTest, LargeGrid) {
+    Pathfinding_Grid<int> grid(100, 100);
     EXPECT_EQ(grid.width, 100);
     EXPECT_EQ(grid.height, 100);
     EXPECT_TRUE(grid.isWithinBounds(99, 99));

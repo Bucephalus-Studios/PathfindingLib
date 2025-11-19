@@ -1,4 +1,4 @@
-#include "../AStarLib.hpp"
+#include "../PathfindingLib.hpp"
 #include "obstacle_maps.hpp"
 #include <benchmark/benchmark.h>
 #include <random>
@@ -6,16 +6,16 @@
 #include <unordered_set>
 #include <cmath>
 
-using namespace AStarLib;
+using namespace PathfindingLib;
 
 // ============================================================================
 // Pre-generated Grids (initialized once)
 // ============================================================================
 
 // Global pre-built grids to avoid re-initialization overhead in benchmarks
-AStar_Grid<int> grid_100x100_10pct(100, 100);
-AStar_Grid<int> grid_100x100_20pct(100, 100);
-AStar_Grid<int> grid_100x100_30pct(100, 100);
+Pathfinding_Grid<int> grid_100x100_10pct(100, 100);
+Pathfinding_Grid<int> grid_100x100_20pct(100, 100);
+Pathfinding_Grid<int> grid_100x100_30pct(100, 100);
 bool grids_initialized = false;
 
 void initializeGrids() {
@@ -47,7 +47,7 @@ void initializeGrids() {
 // Uses the same coordinate hashing approach as A* for fair comparison
 template <typename CoordType>
 std::vector<std::tuple<CoordType, CoordType>> bfs(
-    AStar_Grid<CoordType>& grid,
+    Pathfinding_Grid<CoordType>& grid,
     std::tuple<CoordType, CoordType> start,
     std::tuple<CoordType, CoordType> end) {
 
@@ -92,7 +92,7 @@ std::vector<std::tuple<CoordType, CoordType>> bfs(
 // Dijkstra's algorithm implementation for comparison
 template <typename CoordType>
 std::vector<std::tuple<CoordType, CoordType>> dijkstra(
-    AStar_Grid<CoordType>& grid,
+    Pathfinding_Grid<CoordType>& grid,
     std::tuple<CoordType, CoordType> start,
     std::tuple<CoordType, CoordType> end) {
 
@@ -156,7 +156,7 @@ std::vector<std::tuple<CoordType, CoordType>> dijkstra(
 
 // Benchmark simple pathfinding on empty grid
 static void PathfindingEmptyGrid_10x10(benchmark::State& state) {
-    AStar_Grid<int> grid(10, 10);
+    Pathfinding_Grid<int> grid(10, 10);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(9, 9);
 
@@ -168,7 +168,7 @@ static void PathfindingEmptyGrid_10x10(benchmark::State& state) {
 BENCHMARK(PathfindingEmptyGrid_10x10);
 
 static void PathfindingEmptyGrid_50x50(benchmark::State& state) {
-    AStar_Grid<int> grid(50, 50);
+    Pathfinding_Grid<int> grid(50, 50);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(49, 49);
 
@@ -180,7 +180,7 @@ static void PathfindingEmptyGrid_50x50(benchmark::State& state) {
 BENCHMARK(PathfindingEmptyGrid_50x50);
 
 static void PathfindingEmptyGrid_100x100(benchmark::State& state) {
-    AStar_Grid<int> grid(100, 100);
+    Pathfinding_Grid<int> grid(100, 100);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(99, 99);
 
@@ -192,7 +192,7 @@ static void PathfindingEmptyGrid_100x100(benchmark::State& state) {
 BENCHMARK(PathfindingEmptyGrid_100x100);
 
 static void PathfindingEmptyGrid_500x500(benchmark::State& state) {
-    AStar_Grid<int> grid(500, 500);
+    Pathfinding_Grid<int> grid(500, 500);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(499, 499);
 
@@ -239,7 +239,7 @@ BENCHMARK(PathfindingWithObstacles_100x100_30Percent);
 
 // Benchmark maze-like structures
 static void PathfindingMaze_50x50(benchmark::State& state) {
-    AStar_Grid<int> grid(50, 50);
+    Pathfinding_Grid<int> grid(50, 50);
 
     // Create maze-like pattern
     for (int y = 1; y < 49; y += 4) {
@@ -262,7 +262,7 @@ BENCHMARK(PathfindingMaze_50x50);
 
 // Benchmark worst case - no path exists
 static void PathfindingNoPath_100x100(benchmark::State& state) {
-    AStar_Grid<int> grid(100, 100);
+    Pathfinding_Grid<int> grid(100, 100);
 
     // Create impassable wall
     for (int y = 0; y < 100; ++y) {
@@ -281,7 +281,7 @@ BENCHMARK(PathfindingNoPath_100x100);
 
 // Benchmark short paths
 static void PathfindingShortPath_Adjacent(benchmark::State& state) {
-    AStar_Grid<int> grid(10, 10);
+    Pathfinding_Grid<int> grid(10, 10);
     auto start = std::make_tuple(5, 5);
     auto end = std::make_tuple(6, 5);
 
@@ -293,7 +293,7 @@ static void PathfindingShortPath_Adjacent(benchmark::State& state) {
 BENCHMARK(PathfindingShortPath_Adjacent);
 
 static void PathfindingShortPath_5Steps(benchmark::State& state) {
-    AStar_Grid<int> grid(10, 10);
+    Pathfinding_Grid<int> grid(10, 10);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(5, 0);
 
@@ -336,7 +336,7 @@ BENCHMARK(ManhattanDistance);
 // Benchmark grid construction
 static void GridConstruction_10x10(benchmark::State& state) {
     for (auto _ : state) {
-        AStar_Grid<int> grid(10, 10);
+        Pathfinding_Grid<int> grid(10, 10);
         benchmark::DoNotOptimize(grid);
     }
 }
@@ -344,7 +344,7 @@ BENCHMARK(GridConstruction_10x10);
 
 static void GridConstruction_100x100(benchmark::State& state) {
     for (auto _ : state) {
-        AStar_Grid<int> grid(100, 100);
+        Pathfinding_Grid<int> grid(100, 100);
         benchmark::DoNotOptimize(grid);
     }
 }
@@ -352,7 +352,7 @@ BENCHMARK(GridConstruction_100x100);
 
 static void GridConstruction_500x500(benchmark::State& state) {
     for (auto _ : state) {
-        AStar_Grid<int> grid(500, 500);
+        Pathfinding_Grid<int> grid(500, 500);
         benchmark::DoNotOptimize(grid);
     }
 }
@@ -360,7 +360,7 @@ BENCHMARK(GridConstruction_500x500);
 
 // Benchmark neighbor retrieval
 static void GetNeighbors(benchmark::State& state) {
-    AStar_Grid<int> grid(100, 100);
+    Pathfinding_Grid<int> grid(100, 100);
     auto pos = std::make_tuple(50, 50);
 
     for (auto _ : state) {
@@ -375,7 +375,7 @@ BENCHMARK(GetNeighbors);
 // ============================================================================
 
 static void Comparison_AStar_50x50(benchmark::State& state) {
-    AStar_Grid<int> grid(50, 50);
+    Pathfinding_Grid<int> grid(50, 50);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(49, 49);
 
@@ -387,7 +387,7 @@ static void Comparison_AStar_50x50(benchmark::State& state) {
 BENCHMARK(Comparison_AStar_50x50);
 
 static void Comparison_BFS_50x50(benchmark::State& state) {
-    AStar_Grid<int> grid(50, 50);
+    Pathfinding_Grid<int> grid(50, 50);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(49, 49);
 
@@ -399,7 +399,7 @@ static void Comparison_BFS_50x50(benchmark::State& state) {
 BENCHMARK(Comparison_BFS_50x50);
 
 static void Comparison_Dijkstra_50x50(benchmark::State& state) {
-    AStar_Grid<int> grid(50, 50);
+    Pathfinding_Grid<int> grid(50, 50);
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(49, 49);
 
@@ -443,6 +443,194 @@ static void Comparison_Dijkstra_100x100_WithObstacles(benchmark::State& state) {
     }
 }
 BENCHMARK(Comparison_Dijkstra_100x100_WithObstacles);
+
+// ============================================================================
+// New Algorithm Benchmarks
+// ============================================================================
+
+// AStar algorithm benchmarks
+static void Algorithm_AStar_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathAStar(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_AStar_50x50);
+
+static void Algorithm_AStar_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathAStar(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_AStar_100x100_10pct);
+
+// Dijkstra algorithm benchmarks
+static void Algorithm_Dijkstra_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathDijkstra(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_Dijkstra_50x50);
+
+static void Algorithm_Dijkstra_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathDijkstra(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_Dijkstra_100x100_10pct);
+
+// BFS algorithm benchmarks
+static void Algorithm_BFS_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathBFS(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_BFS_50x50);
+
+static void Algorithm_BFS_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathBFS(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_BFS_100x100_10pct);
+
+// DFS algorithm benchmarks
+static void Algorithm_DFS_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathDFS(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_DFS_50x50);
+
+static void Algorithm_DFS_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathDFS(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_DFS_100x100_10pct);
+
+// Greedy Best-First algorithm benchmarks
+static void Algorithm_GreedyBestFirst_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathGreedyBestFirst(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_GreedyBestFirst_50x50);
+
+static void Algorithm_GreedyBestFirst_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathGreedyBestFirst(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_GreedyBestFirst_100x100_10pct);
+
+// Bidirectional A* algorithm benchmarks
+static void Algorithm_BidirectionalAStar_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPathBidirectionalAStar(grid, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_BidirectionalAStar_50x50);
+
+static void Algorithm_BidirectionalAStar_100x100_10pct(benchmark::State& state) {
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(99, 99);
+
+    for (auto _ : state) {
+        auto path = findPathBidirectionalAStar(grid_100x100_10pct, start, end);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(Algorithm_BidirectionalAStar_100x100_10pct);
+
+// ============================================================================
+// Unified API Benchmarks
+// ============================================================================
+
+static void UnifiedAPI_AStar_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPath(grid, start, end, Algorithm::AStar);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(UnifiedAPI_AStar_50x50);
+
+static void UnifiedAPI_Dijkstra_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPath(grid, start, end, Algorithm::Dijkstra);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(UnifiedAPI_Dijkstra_50x50);
+
+static void UnifiedAPI_BFS_50x50(benchmark::State& state) {
+    Pathfinding_Grid<int> grid(50, 50);
+    auto start = std::make_tuple(0, 0);
+    auto end = std::make_tuple(49, 49);
+
+    for (auto _ : state) {
+        auto path = findPath(grid, start, end, Algorithm::BFS);
+        benchmark::DoNotOptimize(path);
+    }
+}
+BENCHMARK(UnifiedAPI_BFS_50x50);
 
 // Custom main to initialize grids before running benchmarks
 int main(int argc, char** argv) {

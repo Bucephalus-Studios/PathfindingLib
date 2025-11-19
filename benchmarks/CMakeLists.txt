@@ -4,6 +4,6 @@ add_executable(benchmarks
 
 target_link_libraries(benchmarks
     PRIVATE
-        AStarLib
+        PathfindingLib
         benchmark::benchmark
 )

@@ -1,17 +1,19 @@
-# AStarLib
+# PathfindingLib
 
-A fast, header-only C++17 A* pathfinding library with extensive testing and benchmarking.
+A fast, header-only C++17 pathfinding library with **6 algorithms**, extensive testing, and comprehensive benchmarking.
 
 ## Features
 
 - ✨ Header-only library (easy integration)
+- 🎯 **6 Pathfinding Algorithms**: A*, Dijkstra, BFS, DFS, Greedy Best-First, Bidirectional A*
 - 🚀 **60% faster** than naive implementations (optimized hash functions)
-- 🧪 Comprehensive test coverage (52 unit tests)
-- 📊 Performance benchmarks included
-- 🎯 Multiple heuristic functions (Manhattan, Euclidean, Chebyshev, Octile)
+- 🧪 Comprehensive test coverage (90+ unit tests)
+- 📊 Performance benchmarks for all algorithms
+- 🎨 Multiple heuristic functions (Manhattan, Euclidean, Chebyshev, Octile)
 - 🔄 Support for 4-way and 8-way movement
 - 📐 Template-based coordinate types (int, float, double, etc.)
 - 🎓 Well-documented with examples
+- 🔙 Backward compatible with AStarLib v1.x
 
 ## Quick Start
 
@@ -20,30 +22,30 @@ A fast, header-only C++17 A* pathfinding library with extensive testing and benc
 This is a header-only library. Simply copy the header files to your project:
 
 ```cpp
-#include "AStarLib.hpp"
+#include "PathfindingLib.hpp"
 ```
 
 ### Basic Example
 
 ```cpp
-#include "AStarLib.hpp"
+#include "PathfindingLib.hpp"
 #include <iostream>
 
-using namespace AStarLib;
+using namespace PathfindingLib;
 
 int main() {
     // Create a 10x10 grid
-    AStar_Grid<int> grid(10, 10);
+    Pathfinding_Grid<int> grid(10, 10);
 
     // Add some obstacles
     grid.setObstacle(5, 5);
     grid.setObstacle(5, 6);
     grid.setObstacle(5, 7);
 
-    // Find path from (0,0) to (9,9)
+    // Find path from (0,0) to (9,9) using A*
     auto start = std::make_tuple(0, 0);
     auto end = std::make_tuple(9, 9);
-    auto path = findPath(grid, start, end);
+    auto path = findPathAStar(grid, start, end);
 
     // Print the path
     if (!path.empty()) {
@@ -60,23 +62,82 @@ int main() {
 }
 ```
 
+## Algorithms
+
+PathfindingLib supports **6 different pathfinding algorithms**, each with different characteristics:
+
+| Algorithm            | Optimal | Use Case                                    |
+|---------------------|---------|---------------------------------------------|
+| **A***              | ✅ Yes  | Best general-purpose algorithm              |
+| **Dijkstra**        | ✅ Yes  | Guaranteed shortest path, no heuristic      |
+| **BFS**             | ✅ Yes  | Simple, optimal for unweighted graphs       |
+| **DFS**             | ❌ No   | Fast, non-optimal, explores deeply          |
+| **Greedy Best-First** | ❌ No | Very fast, follows heuristic greedily       |
+| **Bidirectional A*** | ✅ Yes | Searches from both ends, faster for long paths |
+
+### Using Different Algorithms
+
+#### Option 1: Direct Function Calls
+
+```cpp
+using namespace PathfindingLib;
+Pathfinding_Grid<int> grid(20, 20);
+auto start = std::make_tuple(0, 0);
+auto end = std::make_tuple(19, 19);
+
+// A* - Optimal, balanced search
+auto pathAStar = findPathAStar(grid, start, end);
+
+// Dijkstra - Optimal, guaranteed shortest
+auto pathDijkstra = findPathDijkstra(grid, start, end);
+
+// BFS - Optimal for unweighted graphs
+auto pathBFS = findPathBFS(grid, start, end);
+
+// DFS - Fast but non-optimal
+auto pathDFS = findPathDFS(grid, start, end);
+
+// Greedy Best-First - Very fast, heuristic-driven
+auto pathGreedy = findPathGreedyBestFirst(grid, start, end);
+
+// Bidirectional A* - Searches from both ends
+auto pathBidirectional = findPathBidirectionalAStar(grid, start, end);
+```
+
+#### Option 2: Unified API
+
+```cpp
+using namespace PathfindingLib;
+Pathfinding_Grid<int> grid(20, 20);
+
+// Use the unified findPath() function with algorithm parameter
+auto pathAStar = findPath(grid, start, end, Algorithm::AStar);
+auto pathDijkstra = findPath(grid, start, end, Algorithm::Dijkstra);
+auto pathBFS = findPath(grid, start, end, Algorithm::BFS);
+auto pathDFS = findPath(grid, start, end, Algorithm::DFS);
+auto pathGreedy = findPath(grid, start, end, Algorithm::GreedyBestFirst);
+auto pathBidir = findPath(grid, start, end, Algorithm::BidirectionalAStar);
+```
+
 ### Simple Convenience Function
 
 For quick pathfinding without creating a grid manually:
 
 ```cpp
-#include "AStarLib.hpp"
+#include "PathfindingLib.hpp"
 
 int main() {
     std::vector<std::tuple<int, int>> obstacles = {
         {5, 5}, {5, 6}, {5, 7}
     };
 
-    auto path = AStarLib::findPathSimple(
+    // Use any algorithm with findPathSimple
+    auto path = PathfindingLib::findPathSimple(
         10, 10,                          // Grid size
         obstacles,                        // Obstacle list
         std::make_tuple(0, 0),           // Start
-        std::make_tuple(9, 9)            // End
+        std::make_tuple(9, 9),           // End
+        Algorithm::AStar                 // Algorithm choice
     );
 
     return 0;
@@ -87,24 +148,23 @@ int main() {
 
 ### Different Heuristics
 
-Choose the best heuristic for your use case:
+Choose the best heuristic for your use case (works with A*, Greedy Best-First, and Bidirectional A*):
 
 ```cpp
-using namespace AStarLib;
-
-AStar_Grid<int> grid(20, 20);
+using namespace PathfindingLib;
+Pathfinding_Grid<int> grid(20, 20);
 
 // Manhattan distance (best for 4-way movement)
-auto path1 = findPath(grid, start, end, HeuristicType::Manhattan);
+auto path1 = findPathAStar(grid, start, end, HeuristicType::Manhattan);
 
 // Euclidean distance (best for 8-way movement)
-auto path2 = findPath(grid, start, end, HeuristicType::Euclidean);
+auto path2 = findPathAStar(grid, start, end, HeuristicType::Euclidean);
 
 // Chebyshev distance (L-infinity norm)
-auto path3 = findPath(grid, start, end, HeuristicType::Chebyshev);
+auto path3 = findPathAStar(grid, start, end, HeuristicType::Chebyshev);
 
 // Octile distance (optimal for 8-way with diagonal cost)
-auto path4 = findPath(grid, start, end, HeuristicType::Octile);
+auto path4 = findPathAStar(grid, start, end, HeuristicType::Octile);
 ```
 
 ### 8-Way Movement
@@ -113,9 +173,10 @@ Enable diagonal movement:
 
 ```cpp
 // Create grid with 8-way movement
-AStar_Grid<int> grid(20, 20, MovementType::EightWay);
+Pathfinding_Grid<int> grid(20, 20, MovementType::EightWay);
 
-auto path = findPath(grid, start, end, HeuristicType::Octile);
+// Use Octile heuristic for best results with 8-way movement
+auto path = findPathAStar(grid, start, end, HeuristicType::Octile);
 ```
 
 ### Custom Coordinate Types
@@ -123,10 +184,10 @@ auto path = findPath(grid, start, end, HeuristicType::Octile);
 Use floating-point coordinates for continuous spaces:
 
 ```cpp
-AStar_Grid<float> grid(100.0f, 100.0f);
+Pathfinding_Grid<float> grid(100.0f, 100.0f);
 auto start = std::make_tuple(0.0f, 0.0f);
 auto end = std::make_tuple(99.5f, 99.5f);
-auto path = findPath(grid, start, end);
+auto path = findPathAStar(grid, start, end);
 ```
 
 ## Building Tests and Benchmarks
@@ -136,52 +197,113 @@ mkdir build && cd build
 cmake ..
 cmake --build .
 
-# Run tests
+# Run tests (90+ tests covering all algorithms)
 ctest --output-on-failure
 
-# Run benchmarks
-./benchmarks/astar_benchmarks
+# Run benchmarks (compares all algorithms)
+./benchmarks/benchmarks
 ```
 
 ## Performance
 
-Benchmarks on a typical system show:
+Benchmarks show excellent performance across all algorithms:
 
+### A* Performance
 | Grid Size | Time (ns)  | Operations/sec |
 |-----------|------------|----------------|
-| 10x10     | 3,437      | ~291,000       |
-| 50x50     | 20,726     | ~48,000        |
-| 100x100   | 49,936     | ~20,000        |
-| 500x500   | 277,354    | ~3,600         |
+| 10x10     | ~3,400     | ~294,000       |
+| 50x50     | ~20,700    | ~48,300        |
+| 100x100   | ~49,900    | ~20,000        |
+| 500x500   | ~277,000   | ~3,600         |
 
 **60% faster** than naive string-based coordinate hashing!
 
+### Algorithm Comparison (50x50 grid, empty)
+| Algorithm         | Relative Speed | Optimality |
+|-------------------|----------------|------------|
+| Greedy Best-First | Fastest        | ❌         |
+| DFS               | Very Fast      | ❌         |
+| A*                | Fast           | ✅         |
+| BFS               | Fast           | ✅         |
+| Dijkstra          | Moderate       | ✅         |
+| Bidirectional A*  | Fast           | ✅         |
+
+*Note: Performance varies based on grid size, obstacle density, and path length.*
+
 ## API Reference
 
-### Core Functions
+### Pathfinding Functions
 
-#### `findPath()`
+#### Algorithm-Specific Functions
+
 ```cpp
+// A* Algorithm
 template<typename CoordType>
-std::vector<std::tuple<CoordType, CoordType>> findPath(
-    AStar_Grid<CoordType>& grid,
+std::vector<std::tuple<CoordType, CoordType>> findPathAStar(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end,
+    HeuristicType heuristic = HeuristicType::Manhattan
+);
+
+// Dijkstra Algorithm
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPathDijkstra(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end
+);
+
+// Breadth-First Search
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPathBFS(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end
+);
+
+// Depth-First Search
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPathDFS(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end
+);
+
+// Greedy Best-First Search
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPathGreedyBestFirst(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end,
+    HeuristicType heuristic = HeuristicType::Manhattan
+);
+
+// Bidirectional A*
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPathBidirectionalAStar(
+    Pathfinding_Grid<CoordType>& grid,
     const std::tuple<CoordType, CoordType>& start,
     const std::tuple<CoordType, CoordType>& end,
     HeuristicType heuristic = HeuristicType::Manhattan
 );
 ```
 
-Finds the shortest path from `start` to `end` using the A* algorithm.
+#### Unified API
 
-**Parameters:**
-- `grid`: The grid to search on
-- `start`: Starting position (x, y)
-- `end`: Target position (x, y)
-- `heuristic`: Heuristic function to use (optional)
+```cpp
+template<typename CoordType>
+std::vector<std::tuple<CoordType, CoordType>> findPath(
+    Pathfinding_Grid<CoordType>& grid,
+    const std::tuple<CoordType, CoordType>& start,
+    const std::tuple<CoordType, CoordType>& end,
+    Algorithm algorithm = Algorithm::AStar,
+    HeuristicType heuristic = HeuristicType::Manhattan
+);
+```
 
-**Returns:** Vector of coordinates representing the path (empty if no path found)
+#### Convenience Function
 
-#### `findPathSimple()`
 ```cpp
 template<typename CoordType>
 std::vector<std::tuple<CoordType, CoordType>> findPathSimple(
@@ -189,17 +311,17 @@ std::vector<std::tuple<CoordType, CoordType>> findPathSimple(
     CoordType height,
     const std::vector<std::tuple<CoordType, CoordType>>& obstacles,
     const std::tuple<CoordType, CoordType>& start,
-    const std::tuple<CoordType, CoordType>& end
+    const std::tuple<CoordType, CoordType>& end,
+    Algorithm algorithm = Algorithm::AStar,
+    HeuristicType heuristic = HeuristicType::Manhattan
 );
 ```
-
-Convenience function that creates a grid and finds a path in one call.
 
 ### Grid Class
 
 #### Constructor
 ```cpp
-AStar_Grid(
+Pathfinding_Grid(
     CoordType width,
     CoordType height,
     MovementType moveType = MovementType::FourWay
@@ -211,8 +333,34 @@ AStar_Grid(
 - `setWalkable(x, y)` - Mark a cell as walkable
 - `getNode(x, y)` - Get node at position
 - `isWithinBounds(x, y)` - Check if coordinates are valid
-- `getNeighbors(x, y)` - Get neighboring cells
+- `getNeighbors(x, y)` - Get neighboring cells (4-way or 8-way)
 - `reset()` - Clear all pathfinding state
+- `getMovementType()` / `setMovementType()` - Get/set movement type
+
+### Enums
+
+```cpp
+enum class Algorithm {
+    AStar,              // A* algorithm
+    Dijkstra,           // Dijkstra's algorithm
+    BFS,                // Breadth-First Search
+    DFS,                // Depth-First Search
+    GreedyBestFirst,    // Greedy Best-First Search
+    BidirectionalAStar  // Bidirectional A*
+};
+
+enum class HeuristicType {
+    Manhattan,  // L1 norm (best for 4-way)
+    Euclidean,  // L2 norm (best for 8-way)
+    Chebyshev,  // L-infinity norm
+    Octile      // Optimal for 8-way with diagonal cost
+};
+
+enum class MovementType {
+    FourWay,    // Cardinal directions only
+    EightWay    // Include diagonals
+};
+```
 
 ### Heuristic Functions
 
@@ -221,12 +369,74 @@ AStar_Grid(
 - `calculateChebyshevDistance()` - L-infinity norm
 - `calculateOctileDistance()` - Optimal for 8-way with diagonal cost
 
+## Backward Compatibility
+
+PathfindingLib 2.0 maintains backward compatibility with AStarLib 1.x:
+
+- Old header files (`AStarLib.hpp`, `AStar_Grid.hpp`, etc.) are still included
+- Old namespace `AStarLib` still works
+- Existing code will continue to work without modification
+
+However, we recommend updating to the new API for access to all algorithms.
+
+## Migration Guide
+
+### From AStarLib 1.x to PathfindingLib 2.0
+
+1. **Update includes:**
+   ```cpp
+   // Old
+   #include "AStarLib.hpp"
+
+   // New
+   #include "PathfindingLib.hpp"
+   ```
+
+2. **Update namespace:**
+   ```cpp
+   // Old
+   using namespace AStarLib;
+
+   // New
+   using namespace PathfindingLib;
+   ```
+
+3. **Update types:**
+   ```cpp
+   // Old
+   AStar_Grid<int> grid(10, 10);
+
+   // New
+   Pathfinding_Grid<int> grid(10, 10);
+   ```
+
+4. **Optionally, use new algorithms:**
+   ```cpp
+   // Old (still works)
+   auto path = findPath(grid, start, end);
+
+   // New (recommended)
+   auto path = findPathAStar(grid, start, end);
+   // or
+   auto path = findPath(grid, start, end, Algorithm::AStar);
+   ```
+
 ## Requirements
 
 - C++17 or later
 - CMake 3.14+ (for building tests/benchmarks)
 - Google Test (automatically fetched)
 - Google Benchmark (automatically fetched)
+
+## Examples
+
+See the `examples/` directory for:
+- Basic pathfinding
+- Pathfinding with obstacles
+- Different heuristics
+- 8-way movement
+- **Algorithm comparison**
+- **Unified API usage**
 
 ## License
 
@@ -239,3 +449,20 @@ Contributions are welcome! Please ensure:
 - Code follows the existing style
 - New features include tests
 - Performance-critical code includes benchmarks
+
+## Changelog
+
+### Version 2.0.0
+- 🎯 Added 5 new pathfinding algorithms (Dijkstra, BFS, DFS, Greedy Best-First, Bidirectional A*)
+- 🎨 Introduced unified `findPath()` API with algorithm parameter
+- 📝 Renamed library to PathfindingLib to reflect broader capabilities
+- 🧪 Expanded test suite to 90+ tests
+- 📊 Added comprehensive benchmarks for all algorithms
+- 🔙 Maintained full backward compatibility with AStarLib 1.x
+
+### Version 1.0.0
+- Initial release as AStarLib
+- A* pathfinding implementation
+- 4 heuristic functions
+- 52 unit tests
+- Performance benchmarks
