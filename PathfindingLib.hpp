@@ -1,7 +1,7 @@
 #pragma once
-#include "Pathfinding_Node.hpp"
-#include "Pathfinding_Grid.hpp"
-#include "Pathfinding_Types.hpp"
+#include "classes/Pathfinding_Node.hpp"
+#include "classes/Pathfinding_Grid.hpp"
+#include "classes/Pathfinding_Types.hpp"
 #include <vector>
 #include <queue>
 #include <stack>

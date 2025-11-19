@@ -1,4 +1,4 @@
-#include "../Pathfinding_Node.hpp"
+#include "../classes/Pathfinding_Node.hpp"
 #include <gtest/gtest.h>
 
 // Test basic node construction

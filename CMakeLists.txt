@@ -69,10 +69,14 @@ install(TARGETS PathfindingLib
 
 install(FILES
     PathfindingLib.hpp
-    Pathfinding_Grid.hpp
-    Pathfinding_Node.hpp
-    Pathfinding_Types.hpp
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/PathfindingLib
+)
+
+install(FILES
+    classes/Pathfinding_Grid.hpp
+    classes/Pathfinding_Node.hpp
+    classes/Pathfinding_Types.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/PathfindingLib/classes
 )
 
 install(EXPORT PathfindingLibTargets
