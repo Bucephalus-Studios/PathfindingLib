@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(AStarLib VERSION 1.0.0 LANGUAGES CXX)
+project(PathfindingLib VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,23 +13,27 @@ else()
 endif()
 
 # Header-only library
-add_library(AStarLib INTERFACE)
-target_include_directories(AStarLib INTERFACE
+add_library(PathfindingLib INTERFACE)
+target_include_directories(PathfindingLib INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
 
-# Testing, benchmarking, and examples
-option(ASTARLIB_BUILD_TESTS "Build tests" ON)
-option(ASTARLIB_BUILD_BENCHMARKS "Build benchmarks" ON)
-option(ASTARLIB_BUILD_EXAMPLES "Build examples" ON)
+# Backward compatibility alias
+add_library(AStarLib INTERFACE)
+target_link_libraries(AStarLib INTERFACE PathfindingLib)
 
-if(ASTARLIB_BUILD_TESTS OR ASTARLIB_BUILD_BENCHMARKS)
+# Testing, benchmarking, and examples
+option(PATHFINDINGLIB_BUILD_TESTS "Build tests" ON)
+option(PATHFINDINGLIB_BUILD_BENCHMARKS "Build benchmarks" ON)
+option(PATHFINDINGLIB_BUILD_EXAMPLES "Build examples" ON)
+
+if(PATHFINDINGLIB_BUILD_TESTS OR PATHFINDINGLIB_BUILD_BENCHMARKS)
     include(FetchContent)
 endif()
 
 # Google Test
-if(ASTARLIB_BUILD_TESTS)
+if(PATHFINDINGLIB_BUILD_TESTS)
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
@@ -44,7 +48,7 @@ if(ASTARLIB_BUILD_TESTS)
 endif()
 
 # Google Benchmark
-if(ASTARLIB_BUILD_BENCHMARKS)
+if(PATHFINDINGLIB_BUILD_BENCHMARKS)
     set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
     FetchContent_Declare(
         benchmark
@@ -57,26 +61,31 @@ if(ASTARLIB_BUILD_BENCHMARKS)
 endif()
 
 # Examples
-if(ASTARLIB_BUILD_EXAMPLES)
+if(PATHFINDINGLIB_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
 # Installation
 include(GNUInstallDirs)
-install(TARGETS AStarLib
-    EXPORT AStarLibTargets
+install(TARGETS PathfindingLib AStarLib
+    EXPORT PathfindingLibTargets
 )
 
 install(FILES
+    PathfindingLib.hpp
+    Pathfinding_Grid.hpp
+    Pathfinding_Node.hpp
+    Pathfinding_Types.hpp
+    # Keep old headers for backward compatibility (can be deprecated in future)
     AStarLib.hpp
     AStar_Grid.hpp
     AStar_Node.hpp
     AStar_Types.hpp
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/AStarLib
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/PathfindingLib
 )
 
-install(EXPORT AStarLibTargets
-    FILE AStarLibTargets.cmake
-    NAMESPACE AStarLib::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/AStarLib
+install(EXPORT PathfindingLibTargets
+    FILE PathfindingLibTargets.cmake
+    NAMESPACE PathfindingLib::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PathfindingLib
 )
