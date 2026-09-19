@@ -11,6 +11,15 @@ struct Pathfinding_Node
     CoordType gCost;  // Distance from start node
     CoordType hCost;  // Heuristic distance to end node
     CoordType fCost;  // Total cost (g + h)
+    CoordType cost = CoordType(1);   // Cost to move INTO this node; findPathAStar() adds this
+                                      // instead of a flat 1 per step, so weighted terrain is
+                                      // opt-in -- the default reproduces old unweighted behavior.
+    bool costComputed = true;        // false only under Pathfinding_Grid's lazy cost mode (see
+                                      // setLazyGridTravelCosts()) -- means `cost` above hasn't
+                                      // been evaluated yet for this node. Grids that never opt
+                                      // into lazy costs (setGridTravelCosts(), or the flat
+                                      // default above) leave every node already "computed", so
+                                      // Pathfinding_Grid::getCost() works the same either way.
     std::tuple<CoordType, CoordType> parent; // Parent node position for path reconstruction
     bool isWalkable;
 

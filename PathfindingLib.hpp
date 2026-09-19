@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <string>
 
 /**
@@ -237,8 +238,8 @@ namespace PathfindingLib
                     continue;
                 }
 
-                CoordType tentativeGCost = grid.getNode(current).gCost + 1;
                 auto& neighborNode = grid.getNode(neighbor);
+                CoordType tentativeGCost = grid.getNode(current).gCost + neighborNode.cost;
 
                 if (openSetTracker.find(neighbor) == openSetTracker.end() ||
                     tentativeGCost < neighborNode.gCost)
@@ -335,8 +336,8 @@ namespace PathfindingLib
                     continue;
                 }
 
-                CoordType tentativeGCost = grid.getNode(current).gCost + 1;
                 auto& neighborNode = grid.getNode(neighbor);
+                CoordType tentativeGCost = grid.getNode(current).gCost + neighborNode.cost;
 
                 if (neighborNode.parent == std::make_tuple(-1, -1) ||
                     tentativeGCost < neighborNode.gCost)
@@ -349,6 +350,109 @@ namespace PathfindingLib
         }
 
         return path;
+    }
+
+    /**
+     * @brief Single-source cost field: settles gCost (cost from source) and parent (for path
+     *        reconstruction via reconstructPath()) on every tile reachable from source, in one
+     *        pass -- unlike findPathAStar()/findPathDijkstra(), which each search for one
+     *        destination and stop as soon as they reach it. Building this once and reading
+     *        gCost/reconstructPath() per destination afterward is dramatically cheaper than
+     *        calling a single-target search once per destination when many destinations need
+     *        their cost from the same source (e.g. AI scoring many candidate targets from one
+     *        HQ) -- each single-target call redoes the whole grid's work from scratch.
+     *
+     *        `algorithm` mirrors findPath()'s dispatch, but only Dijkstra is meaningful here:
+     *        a heuristic-guided search (AStar, GreedyBestFirst, ...) has nothing to aim at
+     *        without a single destination, and would degrade to an unguided Dijkstra anyway
+     *        (A* with h=0 is exactly Dijkstra) -- so Dijkstra is both the default and, for now,
+     *        the only implemented case. The parameter exists so a future genuinely-different
+     *        all-destinations algorithm can be added without changing call sites.
+     *
+     *        `maxCost` bounds how far the field extends: once a popped node's own gCost exceeds
+     *        it, every node still in the open set is at least as far (Dijkstra pops in
+     *        non-decreasing gCost order), so the whole search stops right there rather than
+     *        finishing the map. Tiles never reached this way keep gCost's default and parent
+     *        (-1,-1), same as tiles that were genuinely unreachable. Defaults to unlimited.
+     *        Pair this with Pathfinding_Grid::setLazyGridTravelCosts() to also skip evaluating
+     *        the cost function for tiles outside the cap, not just the search past them.
+     */
+    template<typename CoordType>
+    void findCostField(
+        Pathfinding_Grid<CoordType>& grid,
+        const std::tuple<CoordType, CoordType>& source,
+        Algorithm algorithm = Algorithm::Dijkstra,
+        CoordType maxCost = std::numeric_limits<CoordType>::max())
+    {
+        if (!grid.isWithinBounds(source) || !grid.getNode(source).getIsWalkable())
+        {
+            return;
+        }
+
+        grid.reset();
+
+        auto& sourceNode = grid.getNode(source);
+        sourceNode.gCost = 0;
+        sourceNode.parent = std::make_tuple(CoordType(-1), CoordType(-1));
+
+        switch (algorithm)
+        {
+            case Algorithm::Dijkstra:
+            default:
+            {
+                auto comparator = [&grid](const auto& a, const auto& b) {
+                    return grid.getNode(a).gCost > grid.getNode(b).gCost;
+                };
+
+                std::priority_queue<std::tuple<CoordType, CoordType>,
+                                   std::vector<std::tuple<CoordType, CoordType>>,
+                                   decltype(comparator)> openSet(comparator);
+
+                std::unordered_set<std::tuple<CoordType, CoordType>, CoordHash<CoordType>> visited;
+
+                openSet.push(source);
+
+                while (!openSet.empty())
+                {
+                    auto current = openSet.top();
+                    openSet.pop();
+
+                    if (visited.find(current) != visited.end())
+                    {
+                        continue;
+                    }
+
+                    if (grid.getNode(current).gCost > maxCost)
+                    {
+                        break; // everything still queued is at least this far -- nothing left is in range
+                    }
+
+                    visited.insert(current);
+
+                    const auto neighbors = grid.getNeighbors(current);
+                    for (const auto& neighbor : neighbors)
+                    {
+                        if (!grid.getNode(neighbor).getIsWalkable() ||
+                            visited.find(neighbor) != visited.end())
+                        {
+                            continue;
+                        }
+
+                        auto& neighborNode = grid.getNode(neighbor);
+                        CoordType tentativeGCost = grid.getNode(current).gCost + grid.getCost(neighbor);
+
+                        if (neighborNode.parent == std::make_tuple(CoordType(-1), CoordType(-1)) ||
+                            tentativeGCost < neighborNode.gCost)
+                        {
+                            neighborNode.parent = current;
+                            neighborNode.gCost = tentativeGCost;
+                            openSet.push(neighbor);
+                        }
+                    }
+                }
+                break;
+            }
+        }
     }
 
     /**
